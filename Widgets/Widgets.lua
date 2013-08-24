@@ -1,6 +1,6 @@
 -- Set Global Table
 local TPW = ThreatPlatesWidgets
-
+--[[
 
 TidyPlatesUtility:EnableGroupWatcher()
 TidyPlatesWidgets:EnableAuraWatcher()
@@ -222,7 +222,7 @@ do
 	local db = TidyPlatesThreat.db.profile
 	
 	ThreatPlatesWidgets.RegisterWidget("AuraWidget",TidyPlatesWidgets.CreateAuraWidget,true,function() return db.debuffWidget.ON end)
-	ThreatPlatesWidgets.RegisterWidget("ComboPointsWidget",TidyPlatesWidgets.CreateAuraWidget,true,function() return db.debuffWidget.ON end)
+	--ThreatPlatesWidgets.RegisterWidget("ComboPointsWidget",TidyPlatesWidgets.CreateAuraWidget,true,function() return db.debuffWidget.ON end)
 	ThreatPlatesWidgets.RegisterWidget("ThreatLineWidget",TidyPlatesWidgets.CreateAuraWidget,true,function() return db.debuffWidget.ON end)
 
 end
@@ -320,15 +320,15 @@ local function OnUpdate(plate, unit)
 		w.TankedWidget:Update(unit)
 	end]]--
 end
-
+]]
 local f = CreateFrame("Frame")
 f:SetScript("OnEvent", function(self,event,...) 
 	if event == "ADDON_LOADED" then
 		local arg1 = ...
 		if arg1 == "TidyPlates_ThreatPlates" then
-			TidyPlatesThemeList["Threat Plates"].OnInitialize = ThreatPlatesWidgets.CreateWidgets
-			TidyPlatesThemeList["Threat Plates"].OnUpdate = ThreatPlatesWidgets.UpdatePlate
-			TidyPlatesThemeList["Threat Plates"].OnContextUpdate = ThreatPlatesWidgets.UpdatePlate
+			TidyPlatesThemeList["Threat Plates"].OnInitialize = TPW.CreateWidgets
+			TidyPlatesThemeList["Threat Plates"].OnUpdate = TPW.UpdatePlate
+			TidyPlatesThemeList["Threat Plates"].OnContextUpdate = TPW.UpdatePlate
 		end
 	end
 end)

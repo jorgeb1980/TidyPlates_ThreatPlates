@@ -1,11 +1,9 @@
-----------------------------
--- General Initialization --
-----------------------------
+---------------------
+-- Widget Handling --
+---------------------
 
 ThreatPlatesWidgets = {}
 ThreatPlatesWidgets.list = {}
-local media = LibStub("LibSharedMedia-3.0")
-local db
 
 local function RegisterWidget(name,create,isContext,enabled)
 	if not ThreatPlatesWidgets.list[name] then
@@ -23,7 +21,7 @@ end
 local function CreateWidgets(plate)
 	local w = plate.widgets
 	for k,v in ThreatPlatesWidgets.list do
-		if v.enabled() then
+		if v.enabled then
 			local widget
 			widget = v.create(plate)
 			w[k] = widget
@@ -37,15 +35,11 @@ end
 local function UpdatePlate(plate, unit)
 	local w = plate.widgets
 	for k,v in ThreatPlatesWidgets.list do
-		if v.enabled() then
-			if not w[k] then w[k] = v.create(plate) end
-			w[k]:Update(unit)
-			if v.isContext then
-				w[k]:ContextUpdate(unit)
-			end
+		if not w[k] then CreateWidgets(plate) end
+		if v.isContext then
+			w[k]:UpdateContext(unit)
 		else
-			w[k]:Hide()
-			w[k] = nil
+			w[k]:Update(unit)
 		end
 	end	
 end

@@ -1,21 +1,34 @@
-local f = CreateFrame("frame")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:RegisterEvent("FRIENDLIST_UPDATE")
-f:RegisterEvent("GUILD_ROSTER_UPDATE")
-f:RegisterEvent("BN_CONNECTED")
-f:RegisterEvent("BN_FRIEND_ACCOUNT_ONLINE")
-f:RegisterEvent("BN_FRIEND_ACCOUNT_OFFLINE")
-f:RegisterEvent("BN_FRIEND_LIST_SIZE_CHANGED")
---local 
-local ListTable = {}
-ListTable.g = {}
-ListTable.b = {}
-ListTable.f = {}
-local eventsRegistered = true
+------------------------
+-- Social Icon Widget --
+------------------------
+-- This widget is designed to show a single icon to display the relationship of a player's nameplate by name (regardless of faction if a bnet friend).
+-- To-Do:
+-- Possibly change the method to show 3 icons.
+-- Change the 'guildicon' to use the emblem and border method used by blizzard frames.
 
-local function SetGuildIcon(unit)
-	local bkgR, bkgG, bkgB, borderR, borderG, borderB, emblemR, emblemG, emblemB, emblemFilename = GetGuildLogoInfo(unit)
-	
+local UpdateSocialWidget -- Necessary to have the function available to the Event_Handler function
+
+local ListTable = {
+	g = {},
+	b = {},
+	f = {}
+}
+
+local function UpdateGlist()
+	wipe(ListTable.g)
+	for i=1,GetNumGuildMembers() do
+		local name, rank, rankIndex, level, class, zone, note, officernote, online, status, classFileName, achievementPoints, achievementRank, isMobile = GetGuildRosterInfo(i)
+		tinsert(ListTable.g, name)
+	end
+end
+
+local function UpdateFlist()
+	wipe(ListTable.f)
+	local friendsTotal, friendsOnline = GetNumFriends()
+	for i=1,friendsOnline do
+		local name, level, class, area, connected, status, note = GetFriendInfo(i)
+		tinsert(ListTable.f, name)
+	end
 end
 
 local function UpdateBnetList()
@@ -31,57 +44,87 @@ local function UpdateBnetList()
 end
 
 local function Event_Handler(self,event,...)
-	if event == "PLAYER_ENTERING_WORLD" then
-		ShowFriends()
-		GuildRoster()
-		UpdateBnetList()
-	elseif event == "GUILD_ROSTER_UPDATE" then
-		wipe(ListTable.g)
-		for i=1,GetNumGuildMembers() do
-			local name, rank, rankIndex, level, class, zone, note, officernote, online, status, classFileName, achievementPoints, achievementRank, isMobile = GetGuildRosterInfo(i)
-			tinsert(ListTable.g, name)
-		end
+	if event == "GUILD_ROSTER_UPDATE" then
+		UpdateGlist()
 	elseif event == "FRIENDLIST_UPDATE" then
-		wipe(ListTable.f)
-		local friendsTotal, friendsOnline = GetNumFriends()
-		for i=1,friendsOnline do
-			local name, level, class, area, connected, status, note = GetFriendInfo(i)
-			tinsert(ListTable.f, name)
-		end
+		UpdateFlist()
 	elseif event == "BN_FRIEND_LIST_SIZE_CHANGED" or event == "BN_CONNECTED" or event == "BN_FRIEND_ACCOUNT_ONLINE" or event == "BN_FRIEND_ACCOUNT_OFFLINE" then
 		UpdateBnetList()
 	end
+	for k,v in pairs(WidgetList) do -- Force update 
+		UpdateSocialWidget(k,v)
+	end
 end
 
-f:SetScript("OnEvent", function(self, event, ...)
-	Event_Handler(self,event,...)
-end)
+local WatcherFrame = CreateFrame("frame")
+WatcherFrame:RegisterEvent("FRIENDLIST_UPDATE")
+WatcherFrame:RegisterEvent("GUILD_ROSTER_UPDATE")
+WatcherFrame:RegisterEvent("BN_CONNECTED")
+WatcherFrame:RegisterEvent("BN_FRIEND_ACCOUNT_ONLINE")
+WatcherFrame:RegisterEvent("BN_FRIEND_ACCOUNT_OFFLINE")
+WatcherFrame:RegisterEvent("BN_FRIEND_LIST_SIZE_CHANGED")
+local isEnabled = false
+local function EnableWatcherFrame(arg)
+	isEnabled = arg
+	if arg then
+		WatcherFrame:SetScript("OnEvent",Event_Handler(self,event,...)
+	else
+		WatcherFrame:SetScript("OnEvent",nil)
+	end
+end
+
+--[[
+-- Might make a custom texture to use these values
+-- Completely untested
+local function SetGuildIcon(unit)
+	local bkgR, bkgG, bkgB, borderR, borderG, borderB, emblemR, emblemG, emblemB, emblemFilename = GetGuildLogoInfo(unit)
+end
+]]
 
 local path = "Interface\\AddOns\\TidyPlates_ThreatPlates\\Widgets\\SocialWidget\\"
 
-local function UpdateSocialWidget(frame, unit)
+local function enabled()
 	local db = TidyPlatesThreat.db.profile.socialWidget
-	if db.ON then
+	return db.ON
+end
+
+local function UpdateSettings(frame)
+	local db = TidyPlatesThreat.db.profile.socialWidget
+	frame:SetFrameLevel(plate:GetFrameLevel()+2)
+	frame:SetSize(db.scale,db.scale)
+	frame:SetPoint("CENTER",plate,db.anchor, db.x, db.y)
+end
+
+local UpdateSocialWidget = function(frame, unit)
+	if not WidgetList[frame] then WidgetList[frame] = unit end
+	if enabled then 
+		if not isEnabled then 
+			EnableWatcherFrame(true)
+		end
+		-- I will probably expand this to a table with 'friend = true','guild = true', and 'bnet = true' and have 3 textuers show.
+		local texture
 		if tContains(ListTable.f, unit.name) then
-			frame.Icon:SetTexture(path.."friendicon")
-			frame:Show()
+			texture = path.."friendicon"
 		elseif tContains(ListTable.b, unit.name) then
-			frame.Icon:SetTexture("Interface\\FriendsFrame\\PlusManz-BattleNet")
-			frame:Show()
+			texture = "Interface\\FriendsFrame\\PlusManz-BattleNet"
 		elseif tContains(ListTable.g, unit.name) then
-			frame.Icon:SetTexture(path.."guildicon")
+			texture = path.."guildicon"
+		end
+		if texture then
+			UpdateSettings(frame)
+			frame.Icon:SetTexture(texture)
 			frame:Show()
 		else
 			frame:Hide()
+		end		
+	else		
+		if isEnabled then
+			EnableWatcherFrame(false)
 		end
-		f:SetScript("OnEvent", function(self, event, ...)
-			Event_Handler(self,event,...)
-		end)
-	else
 		frame:Hide()
-		f:SetScript("OnEvent", nil)
 	end
 end	
+
 local function CreateSocialWidget(parent)
 	local frame = CreateFrame("Frame", nil, parent)
 	frame:SetHeight(32)
@@ -93,4 +136,4 @@ local function CreateSocialWidget(parent)
 	return frame
 end
 
-ThreatPlatesWidgets.CreateSocialWidget = CreateSocialWidget
+ThreatPlatesWidgets.RegisterWidget("SocialWidget",CreateSocialWidget,false,enabled)
