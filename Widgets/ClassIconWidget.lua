@@ -11,18 +11,22 @@ end
 local function UpdateClassIconWidget(frame, unit)
 	local db = TidyPlatesThreat.db.profile
 	if not enabled() then frame:Hide(); return end
-	if unit.class and (unit.class ~= "UNKNOWN") then
-		frame.class = unit.class
-	elseif db.cache[unit.name] and db.friendlyClassIcon then
-		frame.class = db.cache[unit.name]
-	elseif unit.guid and not db.cache[unit.name] and db.friendlyClassIcon then
-		local _, engClass = GetPlayerInfoByGUID(unit.guid)
-		if engClass then
-			db.cache[unit.name] = engClass
-			frame.class = engClass
+	if not frame.class then
+		if unit.class and (unit.class ~= "UNKNOWN") then
+			frame.class = unit.class
+		end
+		
+		if db.friendlyClassIcon and not frame.class then
+			if not db.cache[unit.name] and unit.guid then
+				local _, Class = GetPlayerInfoByGUID(unit.guid)
+				db.cache[unit.name] = Class
+				frame.class = Class
+			else
+				frame.class = db.cache[unit.name]
+			end
 		end
 	end
-	if frame.class then
+	if frame.class then -- Value shouldn't need to change
 		frame.Icon:SetTexture(path..db.classWidget.theme.."\\"..frame.class)
 		frame:Show()
 	else

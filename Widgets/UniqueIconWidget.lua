@@ -2,34 +2,43 @@
 -- Unique Icon Widget
 ---------------
 
-local function UpdateUniqueIconWidget(self, unit)
-	local db = TidyPlatesThreat.db.profile
-	if db.uniqueWidget.ON then
-		if tContains(db.uniqueSettings.list, unit.name) then -- unique and db.uniqueWidget.ON and
-			for k_c,k_v in pairs(db.uniqueSettings.list) do
-				if k_v == unit.name then
-					if db.uniqueSettings[k_c].icon and db.uniqueSettings[k_c].showIcon then
-						if tonumber(db.uniqueSettings[k_c].icon) == nil then
-							self.Icon:SetTexture(db.uniqueSettings[k_c].icon)
-						else	
-							local icon = select(3, GetSpellInfo(tonumber(db.uniqueSettings[k_c].icon)))
-							if icon then
-								self.Icon:SetTexture(icon)
-							else
-								self.Icon:SetTexture("Interface\\Icons\\Temp")
-							end
-						end
-						self:Show()
-					else
-						self:Hide()
-					end
+local function enabled()
+	local db = TidyPlatesThreat.db.profile.uniqueWidget
+	return db.ON
+end
+
+local function UpdateUniqueIconWidget(frame, unit)
+	local db = TidyPlatesThreat.db.profile.uniqueSettings
+	local isShown = false
+	if enabled then
+		if tContains(db.list, unit.name) then
+			local s
+			for k,v in pairs(db.list) do
+				if v == unit.name then
+					s = db[k]
+					break
 				end
 			end
-		else 
-			self:Hide()
+			if s and s.showIcon then
+				local icon
+				if tonumber(s.icon) == nil then
+					icon = s.icon
+				else
+					icon = select(3, GetSpellInfo(tonumber(s.icon)))
+				end
+				if icon then
+					frame.Icon:SetTexture(icon)
+				else
+					frame.Icon:SetTexture("Interface\\Icons\\Temp")
+				end
+				isShown = true
+			end
 		end
+	end
+	if isShown then
+		frame:Show()
 	else
-		self:Hide()
+		frame:Hide()
 	end
 end
 
@@ -45,4 +54,4 @@ local function CreateUniqueIconWidget(parent)
 	return frame
 end
 
-ThreatPlatesWidgets.CreateUniqueIconWidget = CreateUniqueIconWidget
+ThreatPlatesWidgets.RegisterWidget("UniqueIconWidget",CreateUniqueIconWidget,false,enabled)
