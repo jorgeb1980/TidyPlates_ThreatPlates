@@ -8,26 +8,35 @@ local function enabled()
 	return db.ON
 end
 
+local function UpdateSettings(frame)
+	local db = TidyPlatesThreat.db.profile.classWidget
+	frame:SetHeight(db.scale)
+	frame:SetWidth(db.scale)		
+	frame:SetPoint((db.anchor), frame:GetParent(), (db.x), (db.y))
+end
+
 local function UpdateClassIconWidget(frame, unit)
 	local db = TidyPlatesThreat.db.profile
 	if not enabled() then frame:Hide(); return end
-	if not frame.class then
-		if unit.class and (unit.class ~= "UNKNOWN") then
-			frame.class = unit.class
-		end
-		
-		if db.friendlyClassIcon and not frame.class then
-			if not db.cache[unit.name] and unit.guid then
-				local _, Class = GetPlayerInfoByGUID(unit.guid)
-				db.cache[unit.name] = Class
-				frame.class = Class
+	local class 
+	if unit.class and (unit.class ~= "UNKNOWN") then
+		class = unit.class
+	elseif db.friendlyClassIcon then
+		if unit.guid then
+			local _, Class = GetPlayerInfoByGUID(unit.guid)
+			if not db.cache[unit.name] then
+				if db.cacheClass then
+					db.cache[unit.name] = Class
+				end
+				class = Class
 			else
-				frame.class = db.cache[unit.name]
+				class = db.cache[unit.name]
 			end
-		end
+		end			
 	end
-	if frame.class then -- Value shouldn't need to change
-		frame.Icon:SetTexture(path..db.classWidget.theme.."\\"..frame.class)
+	if class then -- Value shouldn't need to change
+		UpdateSettings(frame)
+		frame.Icon:SetTexture(path..db.classWidget.theme.."\\"..class)
 		frame:Show()
 	else
 		frame:Hide()	

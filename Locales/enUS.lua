@@ -101,8 +101,8 @@ L["White List"] = true
 L["Black List"] = true
 L["White List (Mine)"] = true
 L["Black List (Mine)"] = true
-L["All Debuffs"] = true
-L["All Debuffs (Mine)"] = true
+L["All Auras"] = true
+L["All Auras (Mine)"] = true
 
 -- Tab Titles
 L["Nameplate Settings"] = true
@@ -291,8 +291,8 @@ L["Enable Threat System"] = true
 L["Additional Toggles"] = true
 L["Ignore Non-Combat Threat"] = true
 L["Disables threat feedback from mobs you're currently not in combat with."] = true
-L["Show Tagged Threat"] = true
-L["Disables threat feedback from tagged mobs regardless of boss or elite levels."] = true
+L["Show Tapped Threat"] = true
+L["Disables threat feedback from tapped mobs regardless of boss or elite levels."] = true
 L["Show Neutral Threat"] = true
 L["Disables threat feedback from neutral mobs regardless of boss or elite levels."] = true
 L["Show Normal Threat"] = true
@@ -362,17 +362,17 @@ L["Combo Points"] = true
 L["This widget will display combo points on your target nameplate."] = true
 
 ----
-L["Debuffs"] = true
-L["This widget will display debuffs that match your filtering on your target nameplate and others you recently moused over."] = true
-L["This lets you select the layout style of the debuff widget. (Reloading UI is needed)"] = true
+L["Aura Widget"] = true
+L["This widget will display auras that match your filtering on your target nameplate and others you recently moused over."] = true
+L["This lets you select the layout style of the aura widget. (Reloading UI is needed)"] = true
 L["Wide"] = true
 L["Square"] = true
 L["Target Only"] = true
-L["This will toggle the debuff widget to only show for your current target."] = true
+L["This will toggle the aura widget to only show for your current target."] = true
 L["Sizing"] = true
 L["Filtering"] = true
 L["Mode"] = true
-L["Filtered Debuffs"] = true
+L["Filtered Auras"] = true
 
 ----
 L["Social Widget"] = true

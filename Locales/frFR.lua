@@ -101,8 +101,8 @@ L["White List"] = "White List"
 L["Black List"] = "Black List"
 L["White List (Mine)"] = "White List (Mine)"
 L["Black List (Mine)"] = "Black List (Mine)"
-L["All Debuffs"] = "All Debuffs"
-L["All Debuffs (Mine)"] = "All Debuffs (Mine)"
+L["All Auras"] = "All Auras"
+L["All Auras (Mine)"] = "All Auras (Mine)"
 
 -- Tab Titles
 L["Nameplate Settings"] = "Nameplate Settings"
@@ -358,17 +358,17 @@ L["Combo Points"] = "Combo Points"
 L["This widget will display combo points on your target nameplate."] = "This widget will display combo points on your target nameplate."
 
 ----
-L["Debuffs"] = "Debuffs"
-L["This widget will display debuffs that match your filtering on your target nameplate and others you recently moused over."] = "This widget will display debuffs that match your filtering on your target nameplate and others you recently moused over."
-L["This lets you select the layout style of the debuff widget. (Reloading UI is needed)"] = "This lets you select the layout style of the debuff widget."
+L["Auras"] = "Auras"
+L["This widget will display auras that match your filtering on your target nameplate and others you recently moused over."] = "This widget will display auras that match your filtering on your target nameplate and others you recently moused over."
+L["This lets you select the layout style of the aura widget. (Reloading UI is needed)"] = "This lets you select the layout style of the aura widget."
 L["Wide"] = "Wide"
 L["Square"] = "Square"
 L["Target Only"] = "Target Only"
-L["This will toggle the debuff widget to only show for your current target."] = "This will toggle the debuff widget to only show for your current target."
+L["This will toggle the aura widget to only show for your current target."] = "This will toggle the aura widget to only show for your current target."
 L["Sizing"] = "Sizing"
 L["Filtering"] = "Filtering"
 L["Mode"] = "Mode"
-L["Filtered Debuffs"] = "Filtered Debuffs"
+L["Filtered Auras"] = "Filtered Auras"
 
 ----
 L["Social Widget"] = "Social Widget"

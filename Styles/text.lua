@@ -1,3 +1,6 @@
+local _, ns = ...
+local t = ns.ThreatPlates
+
 local Media = LibStub("LibSharedMedia-3.0")
 local config = {}
 local path = "Interface\\Addons\\TidyPlates_ThreatPlates\\Artwork\\"

@@ -9,9 +9,9 @@ function tL(number)
 	return name
 end
 
-TPtotemList = {
-	
+ThreatPlates_Totems = {
 	-- Air Totem
+	["Orgrimmar Grunt"] = "A1",
 	[tL(8177)] = 	"A1", 	-- Grounding Totem
 	[tL(120668)] = 	"A2", 	-- Stormlash Totem
 	[tL(108273)] = 	"A3", 	-- Windwalk Totem
@@ -39,21 +39,30 @@ local function enabled()
 end
 
 local function GetTotemInfo(name)
-	local totem = TPtotemList[name]
-	local db = TidyPlatesProfile.totemSettings
+	local totem = ThreatPlates_Totems[name]
+	local db = TidyPlatesThreat.db.profile.totemSettings
 	if totem then
-		local texture =  path..db.totemSettings[totem][7].."\\"..totem
+		local texture =  path..db[totem][7].."\\"..totem
 		return db[totem][3],texture
 	else
 		return false, nil
 	end
 end
 
+local function UpdateSettings(frame)
+	local db = TidyPlatesThreat.db.profile.totemWidget
+	frame:SetHeight(db.scale)
+	frame:SetWidth(db.scale)
+	frame:SetFrameLevel(frame:GetParent():GetFrameLevel()+1)
+	frame:SetPoint(db.anchor,frame:GetParent(),db.x, db.y)
+	frame:Show()
+end
+
 local function UpdateTotemIconWidget(frame, unit)
-	local isActive,texture = GetTotemInfo(unit.name)
-	if enabled and isActive then
+	local isActive, texture = GetTotemInfo(unit.name)
+	if isActive then
 		frame.Icon:SetTexture(texture)
-		frame:Show()
+		UpdateSettings(frame)
 	else
 		frame:Hide()
 	end

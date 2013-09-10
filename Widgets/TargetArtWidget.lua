@@ -10,16 +10,12 @@ local function enabled()
 end
 
 local function UpdateTargetFrameArt(frame, unit)
-	if enabled and unit.isTarget then
-		local style = SetStyleThreatPlates(unit)
-		if style and style ~= "etotem" then
-			local db = TidyPlatesThreat.db.profile.targetWidget
-			frame.Icon:SetTexture(path..db.theme)
-			frame.Icon:SetVertexColor(db.r,db.g,db.b,db.a)
-			frame:Show()
-		else
-			frame:Hide()
-		end
+	local S = TidyPlatesThreat.SetStyle(unit)
+	if unit.isTarget and S ~= "etotem" and S ~= "empty" then
+	 	local db = TidyPlatesThreat.db.profile.targetWidget
+		frame.Icon:SetTexture(path..db.theme)
+		frame.Icon:SetVertexColor(db.r,db.g,db.b,db.a)
+		frame:Show()
 	else
 		frame:Hide()
 	end
@@ -30,6 +26,7 @@ local function CreateTargetFrameArt(parent)
 	frame:SetFrameLevel(parent.bars.healthbar:GetFrameLevel())
 	frame:SetWidth(256)
 	frame:SetHeight(64)	
+	frame:SetPoint("CENTER",parent,"CENTER")
 	frame.Icon = frame:CreateTexture(nil, "OVERLAY")
 	frame.Icon:SetAllPoints(frame)
 	frame:Hide()

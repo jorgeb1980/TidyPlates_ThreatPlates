@@ -1,27 +1,39 @@
+local _, ns = ...
+local t = ns.ThreatPlates
 ------------------------------
 -- Elite Art Overlay Widget --
 ------------------------------
-local path = "Interface\\AddOns\\TidyPlates_ThreatPlates\\Artwork\\"
+-- Notes:
+-- * This is not a 'standard' widget. It's more a work around to display a more elegant elite border on the healthbar.
+-- * Some would consider this a performance hit.
+
+local function enabled()
+	local db = TidyPlatesThreat.db.profile.settings.elitehealthborder
+	return db.show
+end
 
 local function UpdateEliteFrameArtOverlay(frame, unit)
 	local db = TidyPlatesThreat.db.profile.settings.elitehealthborder
-	if unit.isElite and db.show then
-		frame.Icon:SetTexture(path..db.texture)
+	local S = TidyPlatesThreat.SetStyle(unit)
+	if unit.isElite and S ~= "empty" and S~= "etotem" then
+		frame.Border:SetTexture(t.Art..db.texture)
 		frame:Show()
 	else
 		frame:Hide()
 	end
 end
+
 local function CreateEliteFrameArtOverlay(parent)
 	local frame = CreateFrame("Frame", nil, parent)
 	frame:SetFrameLevel(parent.bars.healthbar:GetFrameLevel())
 	frame:SetWidth(256)
 	frame:SetHeight(64)
-	frame.Icon = frame:CreateTexture(nil, "OVERLAY")
-	frame.Icon:SetAllPoints(frame)
+	frame:SetPoint("CENTER",parent,"CENTER")
+	frame.Border = frame:CreateTexture(nil, "OVERLAY")
+	frame.Border:SetAllPoints(frame)
 	frame:Hide()
 	frame.Update = UpdateEliteFrameArtOverlay
 	return frame
 end
 
-ThreatPlatesWidgets.CreateEliteFrameArtOverlay = CreateEliteFrameArtOverlay
+ThreatPlatesWidgets.RegisterWidget("EliteBorder",CreateEliteFrameArtOverlay,false,enabled)

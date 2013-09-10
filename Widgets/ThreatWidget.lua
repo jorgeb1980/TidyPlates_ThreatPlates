@@ -1,4 +1,7 @@
--------==------------
+local _, ns = ...
+local t = ns.ThreatPlates
+
+-------------------
 -- Threat Widget --
 -------------------
 local path = "Interface\\AddOns\\TidyPlates_ThreatPlates\\Widgets\\ThreatWidget\\"
@@ -10,11 +13,10 @@ end
 
 -- Threat Widget
 local function UpdateThreatWidget(frame, unit)
-	local prof = TidyPlatesThreat.db.profile.threat
-	local char = TidyPlatesThreat.db.char.threat
+	if not InCombatLockdown() then frame:Hide() end;
+	local Char = TidyPlatesThreat.db.char.spec
 	local threatLevel 
-	local style = SetStyleThreatPlates(unit)
-	if char.tanking then -- Tanking uses regular textures / swapped for dps / healing
+	if Char[t.Active()] then -- Tanking uses regular textures / swapped for dps / healing
 		threatLevel = unit.threatSituation
 	else
 		if unit.threatSituation == "HIGH" then
@@ -25,12 +27,14 @@ local function UpdateThreatWidget(frame, unit)
 			threatLevel = "MEDIUM"
 		end
 	end
-	if enabled then
-		if unit.isMarked and db.threat.marked.art then
+	if enabled() then
+		local prof = TidyPlatesThreat.db.profile.threat
+		if unit.isMarked and prof.marked.art then
 			frame:Hide()
 		else
+			local style = TidyPlatesThreat.SetStyle(unit)
 			if ((style == "dps") or (style == "tank") or (style == "unique")) and InCombatLockdown() and unit.class == "UNKNOWN" then
-				frame.Texture:SetTexture(path..db.threat.art.theme.."\\"..threatLevel)
+				frame.Texture:SetTexture(path..prof.art.theme.."\\"..threatLevel)
 				frame:Show()
 			end
 		end

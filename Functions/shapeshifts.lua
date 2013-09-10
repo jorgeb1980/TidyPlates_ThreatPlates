@@ -6,11 +6,10 @@ local AuraType = {
 	WARRIOR = "stances"
 }
 local function ShapeshiftUpdate()
-	local _db = TidyPlatesThreat.db.char[AuraType[class]]	
-	if _db.ON then
-		TidyPlatesThreat.db.char.threat.tanking = _db[GetShapeshiftForm()]
-		TidyPlates:ReloadTheme()
-		TidyPlates:ForceUpdate()
+	local db = TidyPlatesThreat.db.char[AuraType[class]]	
+	if db.ON then
+		TidyPlatesThreat.db.char.spec[t.Active()] = _db[GetShapeshiftForm()]
+		t.Update()
 	end
 end
 

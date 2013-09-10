@@ -101,8 +101,8 @@ L["White List"] = "白名单"
 L["Black List"] = "黑名单"
 L["White List (Mine)"] = "白名单（我的）"
 L["Black List (Mine)"] = "黑名单（我的）"
-L["All Debuffs"] = "所有减益状态(Debuffs)"
-L["All Debuffs (Mine)"] = "所有减益状态(Debuffs)（我的）"
+L["All Auras"] = "所有减益状态(Auras)"
+L["All Auras (Mine)"] = "所有减益状态(Auras)（我的）"
 
 -- Tab Titles
 L["Nameplate Settings"] = "姓名板选项"
@@ -358,17 +358,17 @@ L["Combo Points"] = "连击点"
 L["This widget will display combo points on your target nameplate."] = "这个组件将在你的姓名板上显示连击点。"
 
 ----
-L["Debuffs"] = "减益状态(Debuffs)"
-L["This widget will display debuffs that match your filtering on your target nameplate and others you recently moused over."] = "这个组件将在你的目标姓名板与你最近鼠标指向过的其他单位姓名板上显示符合你过滤条件的减益状态(Debuffs)。"
-L["This lets you select the layout style of the debuff widget. (Reloading UI is needed)"] = "This lets you select the layout style of the debuff widget."
+L["Auras"] = "减益状态(Auras)"
+L["This widget will display auras that match your filtering on your target nameplate and others you recently moused over."] = "这个组件将在你的目标姓名板与你最近鼠标指向过的其他单位姓名板上显示符合你过滤条件的减益状态(Auras)。"
+L["This lets you select the layout style of the aura widget. (Reloading UI is needed)"] = "This lets you select the layout style of the aura widget."
 L["Wide"] = "Wide"
 L["Square"] = "Square"
 L["Target Only"] = "Target Only"
-L["This will toggle the debuff widget to only show for your current target."] = "这样做就只显示你对当前目标施加的减益效果。"
+L["This will toggle the aura widget to only show for your current target."] = "这样做就只显示你对当前目标施加的减益效果。"
 L["Sizing"] = "大小"
 L["Filtering"] = "过滤"
 L["Mode"] = "模式"
-L["Filtered Debuffs"] = "滤过的减益状态(Debuffs)"
+L["Filtered Auras"] = "滤过的减益状态(Auras)"
 
 ----
 L["Social Widget"] = "社交组件"

@@ -6,36 +6,18 @@
 ## Author: Suicidal Katt
 ## RequiredDeps: TidyPlates,TidyPlatesWidgets
 ## SavedVariables: ThreatPlatesDB
-## Version: 7.001-Alpha
+## Version: 7.003-Alpha
 ## OptionalDeps: Ace3, LibSharedMedia-3.0
 
-Libs\LibStub\LibStub.lua
-Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
-embeds.xml
+Libs\Libs.xml
+Locales\Locales.xml
 
-Locales\locales.xml
+Init.lua
+Media.lua
+Core.lua
+Commands.lua
+Options.lua
 
-TidyPlatesThreat.lua
-
-commands.lua
-
-Functions\alpha.lua
-Functions\scale.lua
-Functions\healthtext.lua
-Functions\castbarcolor.lua
-Functions\healthbarcolor.lua
-Functions\nametextcolor.lua
-Functions\threatcolor.lua
-Functions\shapeshifts.lua
-
+Functions\Functions.xml
 Widgets\Widgets.xml
-
-options.lua
-
-Styles\empty.lua
-Styles\normal.lua
-Styles\etotem.lua
-Styles\totem.lua
-Styles\unique.lua
-Styles\tank.lua
-Styles\dps.lua
+Styles\Styles.xml

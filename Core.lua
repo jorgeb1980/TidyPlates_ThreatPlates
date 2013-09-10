@@ -1,37 +1,63 @@
-﻿TidyPlatesThreat = LibStub("AceAddon-3.0"):NewAddon("TidyPlatesThreat", "AceConsole-3.0", "AceEvent-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("TidyPlatesThreat", false)
+﻿local _, ns = ...
+local t = ns.ThreatPlates
+local L = t.L
+local class = t.Class()
 
+TidyPlatesThreat = LibStub("AceAddon-3.0"):NewAddon("TidyPlatesThreat", "AceConsole-3.0", "AceEvent-3.0")
 
-local _, PlayerClass = UnitClass("player")
-local Active = function() return GetActiveSpecGroup() end
+t.Print = function(val)
+	local db = TidyPlatesThreat.db.profile
+	if db.verbose then
+		print("TP|cff89F559TP: |r"..val)
+	end
+end
 
 local tankRole = L["|cff00ff00tanking|r"]
 local dpsRole = L["|cffff0000dpsing / healing|r"]
 
+local changelog = {
+	"\nUpdated healthcolor function, framework for off-tanks started.\n",
+	"\n",
+	"\n",
+	""
+}
+
 StaticPopupDialogs["TPTP_ChangeLog"] = {
 	preferredIndex = STATICPOPUP_NUMDIALOGS,
-	text = GetAddOnMetadata("TidyPlates_ThreatPlates", "title").." Change Log:\n\nCurrently an alpha release updated to '5.3'. Some major bugs addressed.\n\nNew features implemented, currently no options for them.", 
+	text = t.Meta("title").." Change Log:"..changelog[1]..changelog[2]..changelog[3]..changelog[4], 
 	button1 = "Thanks for the info!",
 	timeout = 0,
 	whileDead = 1, 
 	hideOnEscape = 1, 
 	OnAccept = function() 
-		print("Type '/tptp' to review the options!")
+		t.Print("Type '/tptp' to review the options!")
 	end,
 }
 
-do
-	HEX_CLASS_COLORS = {};
-	for i=1,#CLASS_SORT_ORDER do
-		local str = RAID_CLASS_COLORS[CLASS_SORT_ORDER[i]].colorStr;
-		local str = gsub(str,"(ff)","",1)
-		HEX_CLASS_COLORS[CLASS_SORT_ORDER[i]] = str;
-	end
-end
+StaticPopupDialogs["SetToThreatPlates"] = {
+	preferredIndex = STATICPOPUP_NUMDIALOGS,
+	text = t.Meta("title")..L[":\n----------\nWould you like to \nset your theme to |cff89F559Threat Plates|r?\n\nClicking '|cff00ff00Yes|r' will set you to Threat Plates & reload UI. \n Clicking '|cffff0000No|r' will open the Tidy Plates options."], 
+	button1 = L["Yes"], 
+	button2 = L["Cancel"],
+	button3 = L["No"],
+	timeout = 0,
+	whileDead = 1, 
+	hideOnEscape = 1, 
+	OnAccept = function() 
+		TidyPlatesOptions.primary = "Threat Plates"
+		TidyPlatesOptions.secondary = "Threat Plates"
+		TidyPlates:ActivateTheme("Threat Plates")
+		TidyPlatesThreat:StartUp()
+		t.Update()
+	end,
+	OnAlt = function() 
+		InterfaceOptionsFrame_OpenToCategory("Tidy Plates")
+	end,
+	OnCancel = function() 
+		t.Print(L["-->>|cffff0000Activate Threat Plates from the Tidy Plates options!|r<<--"])
+	end,
+}
 
---[[Set MultiStyle]]--
-if not TidyPlatesThemeList then TidyPlatesThemeList = {} end
-TidyPlatesThemeList["Threat Plates"] = {}
 
 -- Callback Functions
 function TidyPlatesThreat:ProfChange()
@@ -40,56 +66,26 @@ end
 
 -- Dual Spec Functions
 local currentSpec = {}
-function TidyPlatesThreat:currentRoleBool(number)
-	currentSpec[1] = TidyPlatesThreat.db.char.spec.primary
-	currentSpec[2] = TidyPlatesThreat.db.char.spec.secondary
-	if currentSpec[number] then return currentSpec[number] end
-end
-function TidyPlatesThreat:setSpecTank(number)
-	local specIs = {}
-	specIs[1] = "primary"
-	specIs[2] = "secondary"
-	TidyPlatesThreat.db.char.spec[specIs[number]] = true
-end
-function TidyPlatesThreat:setSpecDPS(number)
-	local specIs = {}
-	specIs[1] = "primary"
-	specIs[2] = "secondary"
-	TidyPlatesThreat.db.char.spec[specIs[number]] = false
-end
-
-function TidyPlatesThreat:dualSpec() --Staggered till after called
-	currentSpec[3] = ""
-	if Active() == 1 then
-		currentSpec[3] = L["primary"]
-	elseif Active() == 2 then
-		currentSpec[3] = L["secondary"]
-	else 
-		currentSpec[3] = L["unknown"]
-	end
-	return currentSpec[3]
-end
-
-function TidyPlatesThreat:roleText() --Staggered till after called
-	if Active() == 1 then
-		if TidyPlatesThreat.db.char.spec.primary then
-			return tankRole
-		else
-			return dpsRole
-		end
-	elseif Active() == 2 then
-		if TidyPlatesThreat.db.char.spec.secondary then
-			return tankRole
-		else
-			return dpsRole
-		end
+function TidyPlatesThreat:SetRole(value,index)
+	if index then
+		self.db.char.spec[index] = value
+	else
+		self.db.char.spec[t.Active()] = value
 	end
 end
 
-function TidyPlatesThreat:specName()
-	local t = TidyPlatesThreat.db.char.specInfo[Active()].name
-	if t then
-		return t
+function TidyPlatesThreat:RoleText()
+	if TidyPlatesThreat.db.char.spec[t.Active()] then
+		return tankRole
+	else
+		return dpsRole
+	end
+end
+
+function TidyPlatesThreat:SpecName()
+	local s = self.db.char.specInfo[t.Active()].name
+	if s then
+		return s
 	else
 		return L["Undetermined"]
 	end		
@@ -113,12 +109,9 @@ function TidyPlatesThreat:OnInitialize()
 					role = "",
 				},
 			},
-			threat = {
-				tanking = true,
-			},
 			spec = {
-				primary = true,
-				secondary = false
+				[1] = false,
+				[2] = false,
 			},
 			stances = {
 				ON = false,
@@ -158,7 +151,11 @@ function TidyPlatesThreat:OnInitialize()
 			cache = {},
 			OldSetting = true,
 			verbose = true,
-			blizzFade = {
+			blizzFadeA = {
+				toggle  = true,
+				amount = -0.3
+			},
+			blizzFadeS = {
 				toggle  = true,
 				amount = -0.3
 			},
@@ -217,6 +214,109 @@ function TidyPlatesThreat:OnInitialize()
 				r = 0,
 				g = 0.5,
 				b = 1,
+			},
+			text = {
+				amount = true,
+				percent = true,
+				full = false,
+				max = false,
+				deficit = false,
+				truncate = true
+			},
+			totemWidget = {
+				ON = true,
+				scale = 35,
+				x = 0,
+				y = 35,
+				level = 1,
+				anchor = "CENTER"
+			},
+			healerTracker = {
+				ON = true,
+				scale = 1,
+				x = 0,
+				y = 35,
+				level = 1,
+				anchor = "CENTER"
+			},
+			debuffWidget = {
+				ON = true,
+				x = 18,
+				y = 32,
+				mode = "whitelist",
+				style = "square",
+				displays = {
+					[1] = true,
+					[2] = true,
+					[3] = true,
+					[4] = true,
+					[5] = true,
+					[6] = true
+				},
+				targetOnly = false,
+				showFriendly = true,
+				showEnemy = true,
+				scale = 1,
+				anchor = "CENTER",
+				filter = {}
+			},
+			uniqueWidget = {
+				ON = true,
+				scale = 35,
+				x = 0,
+				y = 35,
+				level = 1,
+				anchor = "CENTER"
+			},
+			classWidget = {
+				ON = true,
+				scale = 22,
+				x = -74,
+				y = -7,
+				theme = "default",
+				anchor = "CENTER",
+			},
+			targetWidget = {
+				ON = true,
+				theme = "default",
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1
+			},
+			threatWidget = {
+				ON = false,
+				x = 0,
+				y = 26,
+				anchor = "CENTER",
+			},
+			tankedWidget = {
+				ON = false,
+				scale = 16,
+				x = 65,
+				y = 6,
+				anchor = "CENTER",
+			},
+			comboWidget = {
+				ON = false,
+				scale = 64,
+				x = 0,
+				y = -8,
+			},
+			eliteWidget = {
+				ON = true,
+				theme = "default",
+				scale = 15,
+				x = 64,
+				y = 9,
+				anchor = "CENTER"
+			},
+			socialWidget = {
+				ON = false,
+				scale = 16,
+				x = 65,
+				y = 6,
+				anchor = "CENTER",
 			},
 			totemSettings = {
 				hideHealthbar = false,
@@ -865,91 +965,6 @@ function TidyPlatesThreat:OnInitialize()
 				[49] = {},
 				[50] = {},
 			},
-			text = {
-				amount = true,
-				percent = true,
-				full = false,
-				max = false,
-				deficit = false,
-				truncate = true
-			},
-			totemWidget = {
-				ON = true,
-				scale = 35,
-				x = 0,
-				y = 35,
-				level = 1,
-				anchor = "CENTER"
-			},
-			debuffWidget = {
-				ON = true,
-				x = 18,
-				y = 32,
-				mode = "whitelist",
-				style = "square",
-				targetOnly = false,
-				scale = 1,
-				anchor = "CENTER",
-				filter = {}
-			},
-			uniqueWidget = {
-				ON = true,
-				scale = 35,
-				x = 0,
-				y = 35,
-				level = 1,
-				anchor = "CENTER"
-			},
-			classWidget = {
-				ON = true,
-				scale = 22,
-				x = -74,
-				y = -7,
-				theme = "default",
-				anchor = "CENTER",
-			},
-			targetWidget = {
-				ON = true,
-				theme = "default",
-				r = 1,
-				g = 1,
-				b = 1,
-				a = 1
-			},
-			threatWidget = {
-				ON = false,
-				x = 0,
-				y = 26,
-				anchor = "CENTER",
-			},
-			tankedWidget = {
-				ON = false,
-				scale = 16,
-				x = 65,
-				y = 6,
-				anchor = "CENTER",
-			},
-			comboWidget = {
-				ON = false,
-				scale = 64,
-				x = 0,
-				y = -8,
-			},
-			eliteWidget = {
-				ON = true,
-				theme = "default",
-				scale = 15,
-				x = 64,
-				y = 9,
-				anchor = "CENTER"
-			},
-			socialWidget = {
-				ON = false,
-				scale = 16,
-				x = 65,
-				y = 6,
-				anchor = "CENTER",
-			},
 			settings = {
 				frame = {
 					y = 0,
@@ -1301,21 +1316,26 @@ function TidyPlatesThreat:OnInitialize()
 					["Neutral"]	= true,
 					["Tapped"] 	= true,
 					["TargetA"]  = false, -- Custom Target Alpha
-					["TargetS"]  = false -- Custom Target Scale
+					["NoTargetA"]  = false, -- Custom Target Alpha
+					["TargetS"]  = false, -- Custom Target Scale
+					["NoTargetS"]  = false, -- Custom Target Alpha
+					["MarkedA"] = false,
+					["MarkedS"] = false
 				},
 				scale = {
-					["Target"]	= 1, -- Requires Custom Target Scale
-					["Totem"]	= 0.75,
-					["Boss"]	= 1.1,
-					["Elite"]	= 1.04,
-					["Normal"]	= 1,
-					["Neutral"]	= 0.9,
-					["Tapped"] 	= 0.9,
-					["Marked"] 	= 1					
+					["Target"]		= 1, 
+					["NoTarget"]	= 1, 
+					["Totem"]		= 0.75,
+					["Boss"]		= 1.1,
+					["Elite"]		= 1.04,
+					["Normal"]		= 1,
+					["Neutral"]		= 0.9,
+					["Tapped"] 		= 0.9,
+					["Marked"] 		= 1					
 				},
 				alpha = {
-					["Target"]		= 1, -- Requires Custom Target Alpha
-					["NoTarget"]	= 1, -- Used when blizzard custom fade is disabled
+					["Target"]		= 1, 
+					["NoTarget"]	= 1, 
 					["Totem"]		= 1,
 					["Boss"]		= 1,
 					["Elite"]		= 1,
@@ -1339,344 +1359,251 @@ function TidyPlatesThreat:OnInitialize()
 	self:SetUpInitialOptions()
 end
 
--- Unit Classification
-function TPTP_UnitType(unit)
-	local db = TidyPlatesThreat.db.profile
-	local unitRank
-	local totem = TPtotemList[unit.name]
-	local unique = tContains(db.uniqueSettings.list, unit.name)
-	if totem then
-		unitRank = "Totem"
-	elseif unique then
-		for k_c,k_v in pairs(db.uniqueSettings.list) do
-			if k_v == unit.name then
-				if db.uniqueSettings[k_c].useStyle then
-					unitRank = "Unique"
-				else
-					if (unit.isDangerous and (unit.reaction == "FRIENDLY" or unit.reaction == "HOSTILE")) then
-						unitRank = "Boss"
-					elseif (unit.isElite and not unit.isDangerous and (unit.reaction == "FRIENDLY" or unit.reaction == "HOSTILE")) then
-						unitRank = "Elite"
-					elseif (not unit.isElite and not unit.isDangerous and (unit.reaction == "FRIENDLY" or unit.reaction == "HOSTILE"))then
-						unitRank = "Normal"
-					elseif unit.reaction == "NEUTRAL" then
-						unitRank = "Neutral"
-					elseif unit.reaction == "TAPPED" then
-						unitRank = "Tapped"
-					end
-				end
-			end
-		end
-	elseif (unit.isDangerous and (unit.reaction == "FRIENDLY" or unit.reaction == "HOSTILE")) then
-		unitRank = "Boss"
-	elseif (unit.isElite and not unit.isDangerous and (unit.reaction == "FRIENDLY" or unit.reaction == "HOSTILE")) then
-		unitRank = "Elite"
-	elseif (not unit.isElite and not unit.isDangerous and (unit.reaction == "FRIENDLY" or unit.reaction == "HOSTILE"))then
-		unitRank = "Normal"
-	elseif unit.reaction == "NEUTRAL" then
-		unitRank = "Neutral"
-	elseif unit.reaction == "TAPPED" then
-		unitRank = "Tapped"
-	else
-		unitRank = "Normal"
-	end
-	--print(unitRank)
-	return unitRank
-end
-
-function SetStyleThreatPlates(unit)
-	local db = TidyPlatesThreat.db.profile
-	local T = TPTP_UnitType(unit)
-	if T == "Totem" then
-		local tS = db.totemSettings[TPtotemList[unit.name]]
-		if tS[1] then
-			if db.totemSettings.hideHealthbar then 
-				return "etotem"
-			else
-				return "totem"
-			end
-		else
-			return "empty"
-		end
-	elseif T == "Unique" then
-		for k_c,k_v in pairs(db.uniqueSettings.list) do
-			if k_v == unit.name then
-				if db.uniqueSettings[k_c].showNameplate then
-					return "unique"
-				else
-					return "empty"
-				end
-			end
-		end
-	elseif T then
-		if unit.reaction == "HOSTILE" or unit.reaction == "NEUTRAL" or unit.reaction == "TAPPED" then
-			if db.nameplate.toggle[T] then
-				if db.threat.toggle[T] and db.threat.ON and unit.class == "UNKNOWN" and InCombatLockdown() then
-					if db.threat.nonCombat then 
-						if unit.isInCombat or (unit.health < unit.healthmax) then
-							if TidyPlatesThreat.db.char.threat.tanking then
-								return "tank"
-							else
-								return "dps"
-							end
-						else
-							if not db.threat.hideNonCombat then
-								return "normal"
-							else
-								return "empty"
-							end
-						end
-					else
-						if TidyPlatesThreat.db.char.threat.tanking then
-							return "tank"
-						else
-							return "dps"
-						end
-					end
-				else 
-					return "normal"
-				end
-			else
-				return "empty"
-			end
-		elseif unit.reaction == "FRIENDLY" then
-			if db.nameplate.toggle[T] then
-				return "normal"
-			else
-				return "empty"
-			end
-		else 
-			return "empty"
-		end
-	else
-		return "empty"
-	end
-end
-
 local function ShowConfigPanel()
 	TidyPlatesThreat:OpenOptions()
 end
 ------------
 -- EVENTS --
 ------------
-function TidyPlatesThreat:specInfo()
-	for i=1,2 do -- Make sure we set variables for both spec's regardless of dual spec.
-		local _, name, _, _, _, role
-		local specValue = GetSpecialization(false,false,i)
-		if UnitLevel("player") > 9 and specValue then
-			_, name, _, _, _, role = GetSpecializationInfo(specValue, nil, false);		
+function TidyPlatesThreat:SetSpecInfo()
+	for i=1,2 do
+		local role, name
+		if UnitLevel("player") > 9 then
+			role, name = t.SpecZInfo(i)
 		else
 			role, name = "DAMAGER","Unknown"
 		end
-		TidyPlatesThreat.db.char.specInfo[i].role = role
-		TidyPlatesThreat.db.char.specInfo[i].name = name
+		self.db.char.specInfo[i] = {
+			role = role,
+			name = name			
+		}
 	end
+	t.Update()
 end
 
-local tankspecs = {
-    DEATHKNIGHT = 1,
-    DRUID = 2,
-    MONK = 1,
-    PALADIN = 2,
-    WARRIOR = 3,
-}
- 
-function IsTank()
-    if tankspecs[select(2,UnitClass("player"))] and tankspecs[select(2,UnitClass("player"))] == GetSpecialization() then -- checks class and talent specialization match
-        return true
-    else
-        return false
-    end
+------------------
+-- ADDON LOADED --
+------------------
+function TidyPlatesThreat:OnEnable()
+	local ProfDB = self.db.profile
+	local setup = {
+		SetStyle = self.SetStyle,
+		SetScale = self.SetScale,
+		SetAlpha = self.SetAlpha,
+		SetCustomText = self.SetCustomText,
+		SetNameColor = self.SetNameColor,
+		SetThreatColor = self.SetThreatColor,
+		SetCastbarColor = self.SetCastbarColor,
+		SetHealthbarColor = self.SetHealthbarColor,
+		OnInitialize = ThreatPlatesWidgets.CreateWidgets,
+		OnUpdate = ThreatPlatesWidgets.UpdatePlate,
+		OnContextUpdate = ThreatPlatesWidgets.UpdatePlate,
+		ShowConfigPanel = ShowConfigPanel,
+	}
+	TidyPlatesThemeList["Threat Plates"] = setup
+	
+	
+	if ProfDB.debuffWidget.style == "square" then
+		TidyPlatesWidgets.UseSquareDebuffIcon()
+	elseif ProfDB.debuffWidget.style == "wide" then
+		TidyPlatesWidgets.UseWideDebuffIcon()
+	end
+	if ProfDB.tidyplatesFade then
+		TidyPlates:EnableFadeIn()
+	else
+		TidyPlates:DisableFadeIn()
+	end
+	
+	self:StartUp()
+	
+	local events = {
+		"PLAYER_ALIVE",
+		"PLAYER_ENTERING_WORLD",
+		"PLAYER_LEAVING_WORLD",
+		"PLAYER_LOGIN",
+		"PLAYER_LOGOUT",
+		"PLAYER_REGEN_DISABLED",
+		"PLAYER_REGEN_ENABLED",
+		"PLAYER_TALENT_UPDATE"
+	}
+	for i=1,#events do
+		self:RegisterEvent(events[i])
+	end
 end
 
 function TidyPlatesThreat:StartUp()
-	TidyPlatesThreat:specInfo()
-	local t = self.db.char.specInfo[Active()]
--- Welcome
-	local Welcome = L["|cff89f559Welcome to |rTidy Plates: |cff89f559Threat Plates!\nThis is your first time using Threat Plates and you are a(n):\n|r|cff"]..HEX_CLASS_COLORS[PlayerClass]..TidyPlatesThreat:specName().." "..UnitClass("player").."|r|cff89F559.|r\n"
--- Body
-	local NotTank = Welcome..L["|cff89f559Your dual spec's have been set to |r"]..dpsRole.."|cff89f559.|r"
-	local CurrentlyDPS = Welcome..L["|cff89f559You are currently in your "]..dpsRole..L["|cff89f559 role.|r"]
-	local CurrentlyTank = Welcome..L["|cff89f559You are currently in your "]..tankRole..L["|cff89f559 role.|r"]
-	local Undetermined = Welcome..L["|cff89f559Your role can not be determined.\nPlease set your dual spec preferences in the |rThreat Plates|cff89f559 options.|r"]
--- End
-	local Conclusion = L["|cff89f559Additional options can be found by typing |r'/tptp'|cff89F559.|r"]
--- Welcome Setup / Display
+	self:SetSpecInfo()
 	if not self.db.char.welcome then
 		self.db.char.welcome = true
+		local Welcome = L["|cff89f559Welcome to |rTidy Plates: |cff89f559Threat Plates!\nThis is your first time using Threat Plates and you are a(n):\n|r|cff"]..t.HCC[class]..self:SpecName().." "..class.."|r|cff89F559.|r\n"
+		if class == "SHAMAN" or class == "MAGE" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "WARLOCK" then 
+			for i=1, GetNumSpecGroups() do
+				self:SetRole(false,i)
+			end
+			local NotTank = Welcome..L["|cff89f559Your dual spec's have been set to |r"]..self:RoleText().."|cff89f559.|r"
+			t.Print(NotTank)
+		else
+			for i=1, GetNumSpecGroups() do
+				self:SetRole(t.IsTank(i),i)
+			end
+			local Currently = Welcome..L["|cff89f559You are currently in your "]..self:RoleText()..L["|cff89f559 role.|r"]
+			t.Print(Currently)
+		end
+		t.Print(L["|cff89f559Additional options can be found by typing |r'/tptp'|cff89F559.|r"])
 		if ((TidyPlatesOptions.primary ~= "Threat Plates") and (TidyPlatesOptions.secondary ~= "Threat Plates")) then
-			local spec = TidyPlatesThreat:dualSpec()
-			StaticPopupDialogs["SetToThreatPlates"] = {
-				preferredIndex = STATICPOPUP_NUMDIALOGS,
-				text = GetAddOnMetadata("TidyPlates_ThreatPlates", "title")..L[":\n----------\nWould you like to \nset your theme to |cff89F559Threat Plates|r?\n\nClicking '|cff00ff00Yes|r' will set you to Threat Plates & reload UI. \n Clicking '|cffff0000No|r' will open the Tidy Plates options."], 
-				button1 = L["Yes"], 
-				button2 = L["Cancel"],
-				button3 = L["No"],
-				timeout = 0,
-				whileDead = 1, 
-				hideOnEscape = 1, 
-				OnAccept = function() 
-					TidyPlatesOptions.primary = "Threat Plates"
-					TidyPlatesOptions.secondary = "Threat Plates"
-					ReloadUI()
-				end,
-				OnAlt = function() 
-					InterfaceOptionsFrame_OpenToCategory("Tidy Plates")
-				end,
-				OnCancel = function() 
-					if TidyPlatesThreat.db.profile.verbose then print(L["-->>|cffff0000Activate Threat Plates from the Tidy Plates options!|r<<--"]) end
-				end,
-			}
 			StaticPopup_Show("SetToThreatPlates")
 		end
-		if PlayerClass == "SHAMAN" 
-			or PlayerClass == "MAGE" 
-			or PlayerClass == "HUNTER" 
-			or PlayerClass == "ROGUE" 
-			or PlayerClass == "PRIEST" 
-			or PlayerClass == "WARLOCK" then
-			if TidyPlatesThreat.db.profile.verbose then	print(NotTank) end
-			for i=1, GetNumSpecGroups() do
-				TidyPlatesThreat:setSpecDPS(i)
-			end
-		else
-			if IsTank() then
-				if TidyPlatesThreat.db.profile.verbose then	print(CurrentlyTank) end
-			else
-				if TidyPlatesThreat.db.profile.verbose then	print(CurrentlyDPS) end
-			end
-			for i=1, GetNumSpecGroups() do
-				z = self.db.char.specInfo[i].role
-				if z == "TANK" then
-					TidyPlatesThreat:setSpecTank(i)
-				else
-					TidyPlatesThreat:setSpecDPS(i)
-				end
+	else
+		local GlobDB = self.db.global
+		if GlobDB.version ~= tostring(t.Meta("version")) then
+			GlobDB.version = tostring(t.Meta("version"))
+			if self.db.profile.verbose then
+				StaticPopup_Show("TPTP_ChangeLog")
 			end
 		end
 	end
-	if TidyPlatesThreat.db.profile.verbose then	print(Conclusion) end
+	
+	t.SetThemes(self)
+	t.SetTidyPlatesWidgets(self)
+	t.Update()
 	
 end
---[[Events]]--
-local events = {}
+
+
+function TidyPlatesThreat:PLAYER_ALIVE()
+	
+end
+
+function TidyPlatesThreat:PLAYER_ENTERING_WORLD()
+	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+end
+
+function TidyPlatesThreat:PLAYER_LEAVING_WORLD()
+	
+end
+
+function TidyPlatesThreat:PLAYER_LOGIN(...)
+	self.db.profile.cache = {}
+	if self.db.char.welcome and ((TidyPlatesOptions.primary == "Threat Plates") or (TidyPlatesOptions.secondary == "Threat Plates")) then
+		t.Print(L["|cff89f559Threat Plates:|r Welcome back |cff"]..t.HCC[class]..UnitName("player").."|r!!")
+	end
+	if class == "WARRIOR" or class == "DRUID" or class == "DEATHKNIGHT" or class == "PALADIN" then
+		self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+	end 
+end
+
+function TidyPlatesThreat:PLAYER_LOGOUT(...)
+	self.db.profile.cache = {}
+end
+
+function TidyPlatesThreat:SetCvars()
+	SetCVar("ShowClassColorInNameplate", 1)
+	local ProfDB = self.db.profile
+	if GetCVar("nameplateShowEnemyTotems") == "1" then
+		ProfDB.nameplate.toggle["Totem"] = true
+	else
+		ProfDB.nameplate.toggle["Totem"] = false
+	end
+	
+	if GetCVar("ShowVKeyCastbar") == "1" then
+		ProfDB.settings.castbar.show = true
+	else
+		ProfDB.settings.castbar.show = false
+	end
+	
+end
+
+function TidyPlatesThreat:SetGlows()
+	local ProfDB = self.db.profile.threat
+	if ProfDB.ON and (GetCVar("threatWarning") ~= 3) then
+		SetCVar("threatWarning", 3)
+	elseif not ProfDB.ON and (GetCVar("threatWarning") ~= 0) then
+		SetCVar("threatWarning", 0)
+	end
+end
+
+
+function TidyPlatesThreat:PLAYER_REGEN_DISABLED()
+	self:SetGlows()
+end
+
+function TidyPlatesThreat:PLAYER_REGEN_ENABLED()
+	self:SetGlows()
+end
+
+function TidyPlatesThreat:PLAYER_TALENT_UPDATE()
+	self:SetSpecInfo()
+end
+
+function TidyPlatesThreat:UPDATE_SHAPESHIFT_FORM()
+	
+end
+
+function TidyPlatesThreat:ACTIVE_TALENT_GROUP_CHANGED()
+	print("ACTIVE_TALENT_GROUP_CHANGED")
+	self:SetSpecInfo()
+	if ((TidyPlatesOptions.primary == "Threat Plates") or (TidyPlatesOptions.secondary == "Threat Plates")) and self.db.profile.verbose then
+		t.Print(L["|cff89F559Threat Plates|r: Player spec change detected: |cff"]..t.HCC[class]..self:SpecName()..L["|r, you are now in your |cff89F559"]..t.ActiveText()..L["|r spec and are now in your "]..self:RoleText()..L[" role."])
+	end
+end
+
+--[[
 local f = CreateFrame("Frame")
 function f:Events(self,event,...)
 	local ProfDB = TidyPlatesThreat.db.profile
 	local CharDB = TidyPlatesThreat.db.char
-	local GlobDB = TidyPlatesThreat.db.global
-	local arg1, arg2 = ...
-	--[[if arg2 then
-		print(event.." "..arg1.." "..arg2)
-	elseif arg1 then
-		print(event.." "..arg1)
-	else
-		print(event)
-	end]]--
 	if event == "ADDON_LOADED" then
 		if arg1 == "TidyPlates_ThreatPlates" then
-			local setup = {
-				SetStyle = SetStyleThreatPlates,
-				SetScale = TidyPlatesThreat.SetScale,
-				SetAlpha = TidyPlatesThreat.SetAlpha,
-				SetCustomText = TidyPlatesThreat.SetCustomText,
-				SetNameColor = TidyPlatesThreat.SetNameColor,
-				SetThreatColor = TidyPlatesThreat.SetThreatColor,
-				SetCastbarColor = TidyPlatesThreat.SetCastbarColor,
-				SetHealthbarColor = TidyPlatesThreat.SetHealthbarColor,
-				ShowConfigPanel = ShowConfigPanel,
-			}
-			TidyPlatesThemeList["Threat Plates"] = setup
-			if ProfDB.tidyplatesFade then
-				TidyPlates:EnableFadeIn()
-			else
-				TidyPlates:DisableFadeIn()
-			end
-			if GlobDB.version and GlobDB.version ~= tostring(GetAddOnMetadata("TidyPlates_ThreatPlates", "version")) then
-				GlobDB.version = tostring(GetAddOnMetadata("TidyPlates_ThreatPlates", "version"))
-				if ProfDB.verbose then
-					StaticPopup_Show("TPTP_ChangeLog")
-				end
-			end			
+						
 		end
 		f:UnregisterEvent("ADDON_LOADED")
 	elseif event == "PLAYER_ALIVE" then
-		TidyPlatesThreat:StartUp()
 		f:UnregisterEvent("PLAYER_ALIVE")
 	elseif event == "PLAYER_LOGIN" then
-		CharDB.threat.tanking = TidyPlatesThreat:currentRoleBool(Active()) -- Aligns tanking role with current spec on log in.
-		if GetCVar("nameplateShowEnemyTotems") == "1" then
-			ProfDB.nameplate.toggle["Totem"] = true
-		else
-			ProfDB.nameplate.toggle["Totem"] = false
-		end
+		CharDB.tanking = TidyPlatesThreat:currentRoleBool(Active()) -- Aligns tanking role with current spec on log in.
+		
 		SetCVar("ShowClassColorInNameplate", 1)
 		--SetCVar("bloattest", 1)
-		if CharDB.welcome and ((TidyPlatesOptions.primary == "Threat Plates") or (TidyPlatesOptions.secondary == "Threat Plates")) and ProfDB.verbose then
-			print(L["|cff89f559Threat Plates:|r Welcome back |cff"]..HEX_CLASS_COLORS[PlayerClass]..UnitName("player").."|r!!")
+		if CharDB.welcome and ((TidyPlatesOptions.primary == "Threat Plates") or (TidyPlatesOptions.secondary == "Threat Plates")) then
+			t.Print(L["|cff89f559Threat Plates:|r Welcome back |cff"]..t.HCC[class]..UnitName("player").."|r!!")
 		end
 		-- Enable Stances / Shapeshifts and Create Options Tables
-		if PlayerClass == "WARRIOR" or PlayerClass == "DRUID" or PlayerClass == "DEATHKNIGHT" or PlayerClass == "PALADIN" then
+		if class == "WARRIOR" or class == "DRUID" or class == "DEATHKNIGHT" or class == "PALADIN" then
 			f:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
+		
 		local inInstance, iType = IsInInstance()
 		if iType == "arena" or iType == "pvp" then
 			ProfDB.threat.ON = false
 		elseif iType == "party" or iType == "raid" or iType == "none" then
 			ProfDB.threat.ON = ProfDB.OldSetting
 		end
-		ProfDB.cache = {}
+		
 		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 		-- Set Debuff Widget Style
-		if ProfDB.debuffWidget.style == "square" then
-			TidyPlatesWidgets.UseSquareDebuffIcon()
-		elseif ProfDB.debuffWidget.style == "wide" then
-			TidyPlatesWidgets.UseWideDebuffIcon()
-		end
-		--self.db.char.threat.tanking = TidyPlatesThreat:currentRoleBool(Active()) -- Aligns tanking role with current spec on log in, post setup.
-		if GetCVar("ShowVKeyCastbar") == "1" then
-			ProfDB.settings.castbar.show = true
-		else
-			ProfDB.settings.castbar.show = false
-		end
+		--self.db.char.spec[t.Active()] = TidyPlatesThreat:currentRoleBool(Active()) -- Aligns tanking role with current spec on log in, post setup.
+		
 		TidyPlates:ForceUpdate()
 	elseif event == "PLAYER_LEAVING_WORLD" then
 		self:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	elseif event == "ACTIVE_TALENT_GROUP_CHANGED" then
-		TidyPlatesThreat:specInfo()
-		local t = CharDB.specInfo[Active()]
-		CharDB.threat.tanking = TidyPlatesThreat:currentRoleBool(Active())
+		TidyPlatesThreat:SetSpecInfo()
+		local s = CharDB.specInfo[Active()]
+		CharDB.tanking = TidyPlatesThreat:currentRoleBool(Active())
 		if ((TidyPlatesOptions.primary == "Threat Plates") or (TidyPlatesOptions.secondary == "Threat Plates")) and ProfDB.verbose then
-			print(L["|cff89F559Threat Plates|r: Player spec change detected: |cff"]..HEX_CLASS_COLORS[PlayerClass]..TidyPlatesThreat:specName()..L["|r, you are now in your |cff89F559"]..TidyPlatesThreat:dualSpec()..L["|r spec and are now in your "]..TidyPlatesThreat:roleText()..L[" role."])
+			t.Print(L["|cff89F559Threat Plates|r: Player spec change detected: |cff"]..t.HCC[class]..TidyPlatesThreat:specName()..L["|r, you are now in your |cff89F559"]..TidyPlatesThreat:dualSpec()..L["|r spec and are now in your "]..TidyPlatesThreat:roleText()..L[" role."])
 		end
 		TidyPlates:ForceUpdate()
 	elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
-		if ProfDB.threat.ON and (GetCVar("threatWarning") ~= 3) then
-			SetCVar("threatWarning", 3)
-		elseif not ProfDB.threat.ON and (GetCVar("threatWarning") ~= 0) then
-			SetCVar("threatWarning", 0)
-		end
+		
 	elseif event == "PLAYER_LOGOUT" then
 		ProfDB.cache = {}
 	elseif event == "PLAYER_TALENT_UPDATE" then
-		TidyPlatesThreat:specInfo()
+		TidyPlatesThreat:SetSpecInfo()
 	elseif event == "RAID_TARGET_UPDATE" then
-		TidyPlates:Update()
+		--TidyPlates:Update()
 	elseif event == "UPDATE_SHAPESHIFT_FORM" then -- Set tanking per Stances / Shapeshifts
 		TidyPlatesThreat.ShapeshiftUpdate()
 	end
-end
-f:RegisterEvent("ADDON_LOADED")
-f:RegisterEvent("PLAYER_ALIVE")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:RegisterEvent("PLAYER_LEAVING_WORLD")
-f:RegisterEvent("PLAYER_LOGIN")
-f:RegisterEvent("PLAYER_LOGOUT")
-f:RegisterEvent("PLAYER_REGEN_DISABLED")
-f:RegisterEvent("PLAYER_REGEN_ENABLED")
-f:RegisterEvent("RAID_TARGET_UPDATE")
-f:RegisterEvent("PLAYER_TALENT_UPDATE")
-f:SetScript("OnEvent", function(self,event,...)
-	f:Events(self,event,...)
-end)
+end]]

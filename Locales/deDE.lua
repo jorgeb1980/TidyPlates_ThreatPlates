@@ -101,8 +101,8 @@ L["White List"] = "White-List"
 L["Black List"] = "Black-List"
 L["White List (Mine)"] = "White-List (eigene)"
 L["Black List (Mine)"] = "Black-List (eigene)"
-L["All Debuffs"] = "Alle Debuffs"
-L["All Debuffs (Mine)"] = "Alle Debuffs (eigene)"
+L["All Auras"] = "Alle Auras"
+L["All Auras (Mine)"] = "Alle Auras (eigene)"
 
 -- Tab Titles
 L["Nameplate Settings"] = "Einstellungen Namensplaketten"
@@ -358,17 +358,17 @@ L["Combo Points"] = "Combo-Punkte"
 L["This widget will display combo points on your target nameplate."] = "Ermöglicht die Anzeige von Combo-Punkten an der Plakette des Ziels."
 
 ----
-L["Debuffs"] = "Debuffs"
-L["This widget will display debuffs that match your filtering on your target nameplate and others you recently moused over."] = "Hiermit werden Debuffs gemäß des eingestellten Filters auf der Plakette des Ziels sowie auf Zielen, über die kurz zuvor mit der Maus gegangen wurde, angezeigt."
-L["This lets you select the layout style of the debuff widget. (Reloading UI is needed)"] = "This lets you select the layout style of the debuff widget."
+L["Auras Widget"] = "Auras"
+L["This widget will display auras that match your filtering on your target nameplate and others you recently moused over."] = "Hiermit werden Auras gemäß des eingestellten Filters auf der Plakette des Ziels sowie auf Zielen, über die kurz zuvor mit der Maus gegangen wurde, angezeigt."
+L["This lets you select the layout style of the aura widget. (Reloading UI is needed)"] = "This lets you select the layout style of the aura widget."
 L["Wide"] = "Wide"
 L["Square"] = "Square"
 L["Target Only"] = "Target Only"
-L["This will toggle the debuff widget to only show for your current target."] = "This will toggle the debuff widget to only show for your current target."
+L["This will toggle the aura widget to only show for your current target."] = "This will toggle the aura widget to only show for your current target."
 L["Sizing"] = "Größe"
 L["Filtering"] = "Filter"
 L["Mode"] = "Modus"
-L["Filtered Debuffs"] = "Gefilterte Debuffs"
+L["Filtered Auras"] = "Gefilterte Auras"
 
 ----
 L["Social Widget"] = "Soziale Widgets"
