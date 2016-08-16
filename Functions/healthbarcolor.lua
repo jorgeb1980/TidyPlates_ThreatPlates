@@ -53,7 +53,7 @@ local function GetThreatColor(unit,style)
 	if db.threat.ON and db.threat.useHPColor and InCombatLockdown() then
 		if not isTanked then -- This value is going to be determined in the SetStyles function.
 			if style ~= "dps" or style ~= "tank" then
-				if TidyPlatesThreat.db.char.spec[t.Active()] then
+				if TidyPlatesThreat.db.char.spec[GetActiveSpecGroup()] then
 					c = db.settings.tank.threatcolor[unit.threatSituation]
 				else
 					c = db.settings.dps.threatcolor[unit.threatSituation]
@@ -120,14 +120,16 @@ local function SetHealthbarColor(unit)
 			end
 		end
 	end
+	local red,green,blue
 	if unit.isMarked then
-		c = GetMarkedColor(unit,c,allowMarked) -- c will set itself back to c if marked color is disabled
+		red,green,blue = GetMarkedColor(unit,c,allowMarked) -- c will set itself back to c if marked color is disabled
 	end
 	if c then
 		return c.r, c.g, c.b
 	else
-		return unit.red, unit.green, unit.blue
+		red,green,blue = unit.red, unit.green, unit.blue
 	end	
+	return red,green,blue
 end
 
 TidyPlatesThreat.SetHealthbarColor = SetHealthbarColor

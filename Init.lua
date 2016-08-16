@@ -1,4 +1,4 @@
-﻿local _, ns = ...
+local _, ns = ...
 ns.ThreatPlates = {}
 local t = ns.ThreatPlates
 -- Libraries
@@ -45,7 +45,9 @@ t.SpecZ = function(index)
 	return val
 end
 t.SpecZInfo = function(index)
-	local _,name,_,_,_,role = GetSpecializationInfo(t.SpecZ(index),nil,false)
+	-- Some trouble with this API makes it return always an error with its proper
+	--	usage
+	local error,_,name,_,_,_,role,_ = pcall(GetSpecializationInfo, t.SpecZ(index),false,false)
 	return role, name
 end
 t.IsTank = function(index)

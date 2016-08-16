@@ -1,4 +1,4 @@
-﻿local _, ns = ...
+local _, ns = ...
 local t = ns.ThreatPlates
 local L = t.L
 local class = t.Class
@@ -3890,83 +3890,93 @@ local totemID = {
 	[16] = {108280,"W3","2b76ff"}
 }
 for k_c,v_c in ipairs(totemID) do
-	TotemOpts[GetSpellName(totemID[k_c][1])] = {
-		name = "|cff"..totemID[k_c][3]..GetSpellName(totemID[k_c][1]).."|r",
-		type = "group",
-		order = k_c,
-		args = {
-			Header = {
-				name = "> |cff"..totemID[k_c][3]..GetSpellName(totemID[k_c][1]).."|r <",
-				type = "header",
-				order = 0,
-			},
-			Enabled = {
-				name = L["Enable"],
-				type = "group",
-				inline = true,
-				order = 1,
-				args = {
-					Toggle = {
-						name = L["Show Nameplate"],
-						type = "toggle",
-						arg = {"totemSettings",totemID[k_c][2],1},
+	local totemIdentification = totemID[k_c][3]
+	if totemIdentification == nil then
+		totemIdentification = ''
+	end
+	local totemSpellName = GetSpellName(totemID[k_c][1]);
+	if totemSpellName == nil then 
+		totemSpellName = ''
+	end
+	if totemSpellName ~= '' then
+		TotemOpts[GetSpellName(totemID[k_c][1])] = {
+			name = "|cff"..totemID[k_c][3]..GetSpellName(totemID[k_c][1]).."|r",
+			type = "group",
+			order = k_c,
+			args = {
+				Header = {
+					name = "> |cff"..totemIdentification..totemSpellName.."|r <",
+					type = "header",
+					order = 0,
+				},
+				Enabled = {
+					name = L["Enable"],
+					type = "group",
+					inline = true,
+					order = 1,
+					args = {
+						Toggle = {
+							name = L["Show Nameplate"],
+							type = "toggle",
+							arg = {"totemSettings",totemID[k_c][2],1},
+						},
+					},
+				},
+				HealthColor = {
+					name = L["Health Coloring"],
+					type = "group",
+					order = 2,
+					inline = true,
+					disabled = function() if db.totemSettings[totemID[k_c][2]][1] then return false else return true end end,
+					args = {
+						Enable = {
+							name = L["Enable Custom Colors"],
+							type = "toggle",
+							order = 1,
+							arg = {"totemSettings",totemID[k_c][2],2},
+						},
+						Color = {
+							name = L["Color"],
+							type = "color",
+							order = 2,
+							get = GetColor,
+							set = SetColor,
+							disabled = function() if not db.totemSettings[totemID[k_c][2]][1] or not db.totemSettings[totemID[k_c][2]][2] then return true else return false end end,
+							arg = {"totemSettings",totemID[k_c][2],"color"},
+						},
+					},
+				},
+				Textures = {
+					name = L["Textures"],
+					type = "group",
+					order = 3,
+					inline = true,
+					disabled = function() if db.totemSettings[totemID[k_c][2]][1] then return false else return true end end,
+					args = {
+						Icon = {
+							name = "",
+							type = "execute",
+							width = "full",
+							order = 0,
+							image = "Interface\\Addons\\TidyPlates_ThreatPlates\\Widgets\\TotemIconWidget\\"..db.totemSettings[totemID[k_c][2]][7].."\\"..totemID[k_c][2],
+						},
+						Style = {
+							name = "",
+							type = "select",
+							order = 1,
+							width = "full",
+							set = function(info,val)
+								SetValue(info, val)
+								options.args.Totems.args[totemSpellName].args.Textures.args.Icon.image = "Interface\\Addons\\TidyPlates_ThreatPlates\\Widgets\\TotemIconWidget\\"..db.totemSettings[totemID[k_c][2]][7].."\\"..totemID[k_c][2];
+							end,
+							values = {normal = "Normal", special = "Special"},
+							arg = {"totemSettings",totemID[k_c][2],7},
+						},
 					},
 				},
 			},
-			HealthColor = {
-				name = L["Health Coloring"],
-				type = "group",
-				order = 2,
-				inline = true,
-				disabled = function() if db.totemSettings[totemID[k_c][2]][1] then return false else return true end end,
-				args = {
-					Enable = {
-						name = L["Enable Custom Colors"],
-						type = "toggle",
-						order = 1,
-						arg = {"totemSettings",totemID[k_c][2],2},
-					},
-					Color = {
-						name = L["Color"],
-						type = "color",
-						order = 2,
-						get = GetColor,
-						set = SetColor,
-						disabled = function() if not db.totemSettings[totemID[k_c][2]][1] or not db.totemSettings[totemID[k_c][2]][2] then return true else return false end end,
-						arg = {"totemSettings",totemID[k_c][2],"color"},
-					},
-				},
-			},
-			Textures = {
-				name = L["Textures"],
-				type = "group",
-				order = 3,
-				inline = true,
-				disabled = function() if db.totemSettings[totemID[k_c][2]][1] then return false else return true end end,
-				args = {
-					Icon = {
-						name = "",
-						type = "execute",
-						width = "full",
-						order = 0,
-						image = "Interface\\Addons\\TidyPlates_ThreatPlates\\Widgets\\TotemIconWidget\\"..db.totemSettings[totemID[k_c][2]][7].."\\"..totemID[k_c][2],
-					},
-					Style = {
-						name = "",
-						type = "select",
-						order = 1,
-						width = "full",
-						set = function(info,val)
-							SetValue(info, val)
-							options.args.Totems.args[GetSpellName(totemID[k_c][1])].args.Textures.args.Icon.image = "Interface\\Addons\\TidyPlates_ThreatPlates\\Widgets\\TotemIconWidget\\"..db.totemSettings[totemID[k_c][2]][7].."\\"..totemID[k_c][2];
-						end,
-						values = {normal = "Normal", special = "Special"},
-						arg = {"totemSettings",totemID[k_c][2],7},
-					},
-				},
-			},
-		},
-	}
+		}
+	end
 end
 options.args.Totems.args = TotemOpts;
 local CustomOpts_OrderCnt = 30;
